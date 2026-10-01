@@ -1,1 +1,0 @@
-# ict-asset-management-system
