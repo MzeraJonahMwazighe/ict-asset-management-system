@@ -1,0 +1,112 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ICT Asset Management System</title>
+    <link rel="stylesheet" href="/css/stlye.css">
+</head>
+<body>
+    <div class="app-layout">
+
+        <aside class="sidebar">
+            <div class="brand">
+                <h2>ICT Asset Management</h2>
+                <p>NKCC · ICT Department</p>
+            </div>
+
+            <nav class="navigation">
+                <a href="/" class="nav-link active">Dashboard</a>
+                <a href="/assets.html" class="nav-link">Asset Register</a>
+                <a href="/employees.html" class="nav-link">Employees</a>
+                <a href="/maintenance.html" class="nav-link">Maintenance</a>
+            </nav>
+
+            <div class="sidebar-footer">
+                <p>ICT Department</p>
+                <small>Asset Management System</small>
+            </div>
+        </aside>
+
+        <main class="main-content">
+            <header class="topbar">
+                <div>
+                    <h1>Dashboard</h1>
+                    <p>Overview of ICT equipment and asset status.</p>
+                </div>
+
+                <a href="/assets.html" class="button primary-button">
+                    + Register Asset
+                </a>
+            </header>
+
+            <section class="welcome-section">
+                <h2>Welcome to ICT Asset Management</h2>
+                <p>
+                    Manage equipment records, employee assignments,
+                    and maintenance activities from one place.
+                </p>
+            </section>
+
+            <section class="stats-grid">
+                <article class="stat-card">
+                    <p class="stat-label">Total Assets</p>
+                    <h2 id="total-assets">—</h2>
+                    <p class="stat-description">Registered equipment</p>
+                </article>
+
+                <article class="stat-card">
+                    <p class="stat-label">Active Assets</p>
+                    <h2 id="active-assets">—</h2>
+                    <p class="stat-description">Currently active</p>
+                </article>
+
+                <article class="stat-card">
+                    <p class="stat-label">Under Maintenance</p>
+                    <h2 id="maintenance-assets">—</h2>
+                    <p class="stat-description">Currently being serviced</p>
+                </article>
+
+                <article class="stat-card">
+                    <p class="stat-label">Damaged Beyond Repair</p>
+                    <h2 id="damaged-assets">—</h2>
+                    <p class="stat-description">Requires follow-up</p>
+                </article>
+            </section>
+
+            <section class="content-card">
+                <div class="section-heading">
+                    <div>
+                        <h2>Asset Management</h2>
+                        <p>Quick access to the main system functions.</p>
+                    </div>
+                </div>
+
+                <div class="quick-links">
+                    <a href="/assets.html" class="quick-link">
+                        <h3>Asset Register</h3>
+                        <p>View, search, and manage ICT equipment.</p>
+                    </a>
+
+                    <a href="/employees.html" class="quick-link">
+                        <h3>Employees</h3>
+                        <p>Review employees and their departments.</p>
+                    </a>
+
+                    <a href="/maintenance.html" class="quick-link">
+                        <h3>Maintenance</h3>
+                        <p>Record repairs and track maintenance outcomes.</p>
+                    </a>
+                </div>
+            </section>
+
+            <footer class="page-footer">
+                <p>ICT Asset Management System · NKCC</p>
+            </footer>
+        </main>
+
+    </div>
+    <script src="/js/app.js"></script>
+</body>
+</html>

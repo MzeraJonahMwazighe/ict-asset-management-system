@@ -1,0 +1,87 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Asset Register | ICT Asset Management</title>
+    <link rel="stylesheet" href="/css/stlye.css">
+</head>
+<body>
+    <div class="app-layout">
+
+        <aside class="sidebar">
+            <div class="brand">
+                <h2>ICT Asset Management</h2>
+                <p>NKCC · ICT Department</p>
+            </div>
+
+            <nav class="navigation">
+                <a href="/" class="nav-link">Dashboard</a>
+                <a href="/assets.html" class="nav-link active">Asset Register</a>
+                <a href="/employees.html" class="nav-link">Employees</a>
+                <a href="/maintenance.html" class="nav-link">Maintenance</a>
+            </nav>
+
+            <div class="sidebar-footer">
+                <p>ICT Department</p>
+                <small>Asset Management System</small>
+            </div>
+        </aside>
+
+        <main class="main-content">
+            <header class="topbar">
+                <div>
+                    <h1>Asset Register</h1>
+                    <p>View and manage registered ICT equipment.</p>
+                </div>
+
+                <button class="button primary-button" id="show-asset-form">
+                    + Register Asset
+                </button>
+            </header>
+
+            <section class="content-card">
+                <div class="section-heading">
+                    <div>
+                        <h2>Registered Equipment</h2>
+                        <p>Search and review ICT assets in the database.</p>
+                    </div>
+                </div>
+
+                <div style="margin-bottom: 20px;">
+                    <input
+                        type="search"
+                        id="asset-search"
+                        placeholder="Search by device name, model, serial number..."
+                        style="width: 100%; max-width: 500px; padding: 12px;"
+                    >
+                </div>
+
+                <div style="overflow-x: auto;">
+                    <table style="width: 100%; border-collapse: collapse;">
+                        <thead>
+                            <tr>
+                                <th align="left">Device Name</th>
+                                <th align="left">Device Type</th>
+                                <th align="left">Model</th>
+                                <th align="left">Serial Number</th>
+                                <th align="left">Department</th>
+                                <th align="left">Status</th>
+                            </tr>
+                        </thead>
+                        <tbody id="asset-table-body">
+                            <tr>
+                                <td colspan="6">Loading assets...</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+        </main>
+
+    </div>
+
+    <script src="/js/assets.js"></script>
+</body>
+</html>
