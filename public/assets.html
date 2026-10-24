@@ -41,6 +41,59 @@
                 </button>
             </header>
 
+            <section class="content-card" id="asset-form-container" hidden>
+                <h2>Register New Asset</h2>
+
+                <form id="asset-form">
+                    <label for="asset_type">Device Type</label>
+                    <select id="asset_type" name="asset_type" required>
+                        <option value="">Select device type</option>
+                        <option value="Computer">Computer</option>
+                        <option value="Server">Server</option>
+                        <option value="Printer">Printer</option>
+                        <option value="Cisco Phone">Cisco Phone</option>
+                    </select>
+
+                    <label for="computer_name">Computer / Device Name</label>
+                    <input type="text" id="computer_name" name="computer_name">
+
+                    <label for="device_model">Device Model</label>
+                    <input type="text" id="device_model" name="device_model" required>
+
+                    <label for="device_description">Device Description</label>
+                    <textarea id="device_description" name="device_description"></textarea>
+
+                    <label for="operating_system">Operating System</label>
+                    <input type="text" id="operating_system" name="operating_system">
+
+                    <label for="username">Assigned Username</label>
+                    <input type="text" id="username" name="username">
+
+                    <label for="department">Department</label>
+                    <input type="text" id="department" name="department" required>
+
+                    <label for="serial_number">Serial Number</label>
+                    <input type="text" id="serial_number" name="serial_number" required>
+
+                    <label for="asset_status">Asset Status</label>
+                    <select id="asset_status" name="asset_status" required>
+                        <option value="Active">Active</option>
+                        <option value="Under Maintenance">Under Maintenance</option>
+                        <option value="Damaged Beyond Repair">Damaged Beyond Repair</option>
+                    </select>
+
+                    <button type="submit" class="button primary-button">
+                        Save Asset
+                    </button>
+
+                    <button type="button" id="cancel-asset-form">
+                        Cancel
+                    </button>
+
+                    <p id="asset-form-message" role="status"></p>
+                </form>
+            </section>
+
             <section class="content-card">
                 <div class="section-heading">
                     <div>
@@ -49,13 +102,27 @@
                     </div>
                 </div>
 
-                <div style="margin-bottom: 20px;">
+                <div class="asset-filters">
                     <input
                         type="search"
                         id="asset-search"
-                        placeholder="Search by device name, model, serial number..."
-                        style="width: 100%; max-width: 500px; padding: 12px;"
+                        placeholder="Search by device name, model, serial number, or department..."
                     >
+
+                    <select id="asset-type-filter">
+                        <option value="">All Device Types</option>
+                        <option value="Computer">Computer</option>
+                        <option value="Server">Server</option>
+                        <option value="Printer">Printer</option>
+                        <option value="Cisco Phone">Cisco Phone</option>
+                    </select>
+
+                    <select id="asset-status-filter">
+                        <option value="">All Statuses</option>
+                        <option value="Active">Active</option>
+                        <option value="Under Maintenance">Under Maintenance</option>
+                        <option value="Damaged Beyond Repair">Damaged Beyond Repair</option>
+                    </select>
                 </div>
 
                 <div style="overflow-x: auto;">

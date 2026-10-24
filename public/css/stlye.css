@@ -266,3 +266,106 @@ a {
         grid-template-columns: 1fr;
     }
 }
+
+/* ===== Asset registration form ===== */
+#asset-form-container {
+    margin-bottom: 24px;
+}
+
+#asset-form-container h2 {
+    font-size: 20px;
+    margin-bottom: 20px;
+}
+
+#asset-form {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px 20px;
+}
+
+#asset-form label {
+    display: block;
+    font-size: 14px;
+    font-weight: 600;
+    margin-top: 6px;
+}
+
+#asset-form input,
+#asset-form select,
+#asset-form textarea {
+    width: 100%;
+    min-width: 0;
+    padding: 11px 12px;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    background: #ffffff;
+    color: var(--text);
+    font: inherit;
+    font-size: 14px;
+}
+
+#asset-form textarea {
+    min-height: 90px;
+    resize: vertical;
+}
+
+#asset-form input:focus,
+#asset-form select:focus,
+#asset-form textarea:focus {
+    outline: 2px solid var(--primary);
+    outline-offset: 1px;
+}
+
+#asset-form button {
+    justify-self: start;
+    cursor: pointer;
+}
+
+#asset-form-message {
+    grid-column: 1 / -1;
+    font-size: 14px;
+}
+
+/* Stack form fields on smaller screens */
+@media (max-width: 700px) {
+    #asset-form {
+        grid-template-columns: 1fr;
+    }
+}
+
+
+/* ===== Asset Register Search and Filters ===== */
+.asset-filters {
+    display: grid;
+    grid-template-columns: minmax(250px, 2fr) minmax(180px, 1fr) minmax(220px, 1fr);
+    gap: 16px;
+    margin-bottom: 24px;
+    align-items: center;
+}
+
+.asset-filters input,
+.asset-filters select {
+    width: 100%;
+    min-width: 0;
+    box-sizing: border-box;
+    padding: 12px 14px;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    background: #ffffff;
+    color: var(--text);
+    font: inherit;
+    font-size: 14px;
+}
+
+.asset-filters input:focus,
+.asset-filters select:focus {
+    outline: 2px solid var(--primary);
+    outline-offset: 1px;
+}
+
+/* Stack filters when there isn't enough horizontal space */
+@media (max-width: 900px) {
+    .asset-filters {
+        grid-template-columns: 1fr;
+    }
+}

@@ -49,7 +49,8 @@ app.get("/api/dashboard", async (req, res) => {
             FROM assets
         `);
 
-        res.json(rows[0]);
+        console.log("Dashboard data from MySQL:", rows[0]);
+       res.json(rows[0]);
     } catch (error) {
         console.error("Dashboard query failed:", error.message);
 
@@ -89,6 +90,97 @@ app.get("/api/assets", async (req, res) => {
         });
     }
 });
+
+/**
+ * Register a new asset
+ */
+app.post("/api/assets", async (req, res) => {
+    try {
+        const {
+            asset_type,
+            computer_name,
+            device_model,
+            device_description,
+            operating_system,
+            username,
+            department,
+            serial_number,
+            asset_status
+        } = req.body;
+
+        // Validate required fields
+        if (
+            !asset_type ||
+            !device_model ||
+            !department ||
+            !serial_number ||
+            !asset_status
+        ) {
+            return res.status(400).json({
+                message: "Please complete all required fields."
+            });
+        }
+
+        // Determine how the asset is assigned
+        const assignment_type = username
+            ? "Individual"
+            : department
+                ? "Department"
+                : "Unassigned";
+
+        const [result] = await pool.query(
+            `INSERT INTO assets (
+                asset_type,
+                computer_name,
+                device_model,
+                device_description,
+                operating_system,
+                username,
+                department,
+                serial_number,
+                assignment_type,
+                asset_status,
+                employee_id
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NULL)`,
+            [
+                asset_type,
+                computer_name || null,
+                device_model,
+                device_description || null,
+                operating_system || null,
+                username || null,
+                department,
+                serial_number,
+                assignment_type,
+                asset_status
+            ]
+        );
+
+        res.status(201).json({
+            message: "Asset registered successfully.",
+            asset_id: result.insertId
+        });
+    } catch (error) {
+        console.error("Asset registration failed:", error.message);
+
+        if (error.code === "ER_DUP_ENTRY") {
+            return res.status(409).json({
+                message: "An asset with this serial number already exists."
+            });
+        }
+
+        if (error.code === "ER_DATA_TOO_LONG" || error.code === "WARN_DATA_TRUNCATED") {
+            return res.status(400).json({
+                message: "One or more asset fields contain invalid values."
+            });
+        }
+
+        res.status(500).json({
+            message: "Unable to register asset."
+        });
+    }
+});
+
 
 // Start server
 app.listen(PORT, () => {
