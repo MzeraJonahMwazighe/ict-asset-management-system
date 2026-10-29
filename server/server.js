@@ -181,6 +181,137 @@ app.post("/api/assets", async (req, res) => {
     }
 });
 
+/**
+ * Update an existing asset
+ */
+app.put("/api/assets/:id", async (req, res) => {
+    try {
+        const assetId = Number(req.params.id);
+
+        if (!Number.isInteger(assetId) || assetId <= 0) {
+            return res.status(400).json({
+                message: "Invalid asset ID."
+            });
+        }
+
+        const {
+            asset_type,
+            computer_name,
+            device_model,
+            device_description,
+            operating_system,
+            username,
+            department,
+            serial_number,
+            asset_status
+        } = req.body;
+
+        // Validate required fields
+        if (
+            !asset_type ||
+            !device_model ||
+            !department ||
+            !serial_number ||
+            !asset_status
+        ) {
+            return res.status(400).json({
+                message: "Please complete all required fields."
+            });
+        }
+
+        // Validate allowed device types
+        const allowedAssetTypes = [
+            "Computer",
+            "Server",
+            "Printer",
+            "Cisco Phone"
+        ];
+
+        if (!allowedAssetTypes.includes(asset_type)) {
+            return res.status(400).json({
+                message: "Invalid device type."
+            });
+        }
+
+        // Validate allowed asset statuses
+        const allowedAssetStatuses = [
+            "Active",
+            "Under Maintenance",
+            "Damaged Beyond Repair"
+        ];
+
+        if (!allowedAssetStatuses.includes(asset_status)) {
+            return res.status(400).json({
+                message: "Invalid asset status."
+            });
+        }
+        // Determine the assignment category
+        const assignment_type = username
+            ? "Individual"
+            : "Department";
+
+        const [result] = await pool.query(
+            `UPDATE assets
+             SET
+                asset_type = ?,
+                computer_name = ?,
+                device_model = ?,
+                device_description = ?,
+                operating_system = ?,
+                username = ?,
+                department = ?,
+                serial_number = ?,
+                assignment_type = ?,
+                asset_status = ?,
+                updated_at = CURRENT_TIMESTAMP
+             WHERE asset_id = ?`,
+            [
+                asset_type,
+                computer_name || null,
+                device_model,
+                device_description || null,
+                operating_system || null,
+                username || null,
+                department,
+                serial_number,
+                assignment_type,
+                asset_status,
+                assetId
+            ]
+        );
+
+        if (result.affectedRows === 0) {
+            return res.status(404).json({
+                message: "Asset not found."
+            });
+        }
+
+        res.json({
+            message: "Asset updated successfully."
+        });
+    } catch (error) {
+        console.error("Asset update failed:", error.message);
+
+        if (error.code === "ER_DUP_ENTRY") {
+            return res.status(409).json({
+                message: "Another asset already uses this serial number."
+            });
+        }
+
+        if (
+            error.code === "ER_DATA_TOO_LONG" ||
+            error.code === "WARN_DATA_TRUNCATED"
+        ) {
+            return res.status(400).json({
+                message: "One or more asset fields contain invalid values."
+            });
+        }
+
+        res.status(500).json({
+            message: "Unable to update asset."
+        });
+    }
+});
 
 // Start server
 app.listen(PORT, () => {

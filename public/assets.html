@@ -94,6 +94,60 @@
                 </form>
             </section>
 
+<section class="content-card" id="edit-asset-form-container" hidden>
+    <h2>Edit Asset</h2>
+
+    <form id="edit-asset-form">
+        <input type="hidden" id="edit_asset_id" name="asset_id">
+
+        <label for="edit_asset_type">Device Type</label>
+        <select id="edit_asset_type" name="asset_type" required>
+            <option value="Computer">Computer</option>
+            <option value="Server">Server</option>
+            <option value="Printer">Printer</option>
+            <option value="Cisco Phone">Cisco Phone</option>
+        </select>
+
+        <label for="edit_computer_name">Computer / Device Name</label>
+        <input type="text" id="edit_computer_name" name="computer_name">
+
+        <label for="edit_device_model">Device Model</label>
+        <input type="text" id="edit_device_model" name="device_model" required>
+
+        <label for="edit_device_description">Device Description</label>
+        <textarea id="edit_device_description" name="device_description"></textarea>
+
+        <label for="edit_operating_system">Operating System</label>
+        <input type="text" id="edit_operating_system" name="operating_system">
+
+        <label for="edit_username">Assigned Username</label>
+        <input type="text" id="edit_username" name="username">
+
+        <label for="edit_department">Department</label>
+        <input type="text" id="edit_department" name="department" required>
+
+        <label for="edit_serial_number">Serial Number</label>
+        <input type="text" id="edit_serial_number" name="serial_number" required>
+
+        <label for="edit_asset_status">Asset Status</label>
+        <select id="edit_asset_status" name="asset_status" required>
+            <option value="Active">Active</option>
+            <option value="Under Maintenance">Under Maintenance</option>
+            <option value="Damaged Beyond Repair">Damaged Beyond Repair</option>
+        </select>
+
+        <button type="submit" class="button primary-button">
+            Save Changes
+        </button>
+
+        <button type="button" id="cancel-edit-asset">
+            Cancel
+        </button>
+
+        <p id="edit-asset-message" role="status"></p>
+    </form>
+</section>
+
             <section class="content-card">
                 <div class="section-heading">
                     <div>
@@ -127,19 +181,22 @@
 
                 <div style="overflow-x: auto;">
                     <table style="width: 100%; border-collapse: collapse;">
-                        <thead>
-                            <tr>
-                                <th align="left">Device Name</th>
-                                <th align="left">Device Type</th>
-                                <th align="left">Model</th>
-                                <th align="left">Serial Number</th>
-                                <th align="left">Department</th>
-                                <th align="left">Status</th>
-                            </tr>
-                        </thead>
+
+<thead>
+    <tr>
+        <th align="left">Device Name</th>
+        <th align="left">Device Type</th>
+        <th align="left">Model</th>
+        <th align="left">Serial Number</th>
+        <th align="left">Department</th>
+        <th align="left">Status</th>
+        <th align="left">Actions</th>
+    </tr>
+</thead>
+
                         <tbody id="asset-table-body">
                             <tr>
-                                <td colspan="6">Loading assets...</td>
+                                <td colspan="7">Loading assets...</td>
                             </tr>
                         </tbody>
                     </table>

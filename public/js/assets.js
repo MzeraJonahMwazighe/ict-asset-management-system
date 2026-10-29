@@ -64,16 +64,25 @@ function renderAssets() {
         return;
     }
 
-    tableBody.innerHTML = filteredAssets.map(asset => `
-        <tr>
-            <td>${asset.computer_name ?? ""}</td>
-            <td>${asset.asset_type ?? ""}</td>
-            <td>${asset.device_model ?? ""}</td>
-            <td>${asset.serial_number ?? ""}</td>
-            <td>${asset.department ?? ""}</td>
-            <td>${asset.asset_status ?? ""}</td>
-        </tr>
-    `).join("");
+tableBody.innerHTML = filteredAssets.map(asset => `
+    <tr>
+        <td>${asset.computer_name ?? ""}</td>
+        <td>${asset.asset_type ?? ""}</td>
+        <td>${asset.device_model ?? ""}</td>
+        <td>${asset.serial_number ?? ""}</td>
+        <td>${asset.department ?? ""}</td>
+        <td>${asset.asset_status ?? ""}</td>
+        <td>
+            <button
+                type="button"
+                class="button edit-asset-button"
+                data-asset-id="${asset.asset_id}"
+            >
+                Edit
+            </button>
+        </td>
+    </tr>
+`).join("");
 }
 
 document.getElementById("asset-search").addEventListener(
@@ -90,7 +99,6 @@ document.getElementById("asset-status-filter").addEventListener(
     "change",
     renderAssets
 );
-
 
 loadAssets();
 
@@ -148,6 +156,111 @@ assetForm.addEventListener("submit", async (event) => {
 
     } catch (error) {
         assetFormMessage.textContent = error.message;
+    } finally {
+        submitButton.disabled = false;
+    }
+});
+
+const editAssetFormContainer = document.getElementById(
+    "edit-asset-form-container"
+);
+
+const editAssetForm = document.getElementById("edit-asset-form");
+const editAssetMessage = document.getElementById("edit-asset-message");
+const cancelEditAssetButton = document.getElementById("cancel-edit-asset");
+
+// Open the edit form and fill it with the selected asset's details
+document.getElementById("asset-table-body").addEventListener(
+    "click",
+    event => {
+        const editButton = event.target.closest(".edit-asset-button");
+
+        if (!editButton) {
+            return;
+        }
+
+        const assetId = Number(editButton.dataset.assetId);
+
+        const asset = allAssets.find(
+            item => Number(item.asset_id) === assetId
+        );
+
+        if (!asset) {
+            return;
+        }
+
+        document.getElementById("edit_asset_id").value = asset.asset_id;
+        document.getElementById("edit_asset_type").value = asset.asset_type ?? "Computer";
+        document.getElementById("edit_computer_name").value = asset.computer_name ?? "";
+        document.getElementById("edit_device_model").value = asset.device_model ?? "";
+        document.getElementById("edit_device_description").value = asset.device_description ?? "";
+        document.getElementById("edit_operating_system").value = asset.operating_system ?? "";
+        document.getElementById("edit_username").value = asset.username ?? "";
+        document.getElementById("edit_department").value = asset.department ?? "";
+        document.getElementById("edit_serial_number").value = asset.serial_number ?? "";
+        document.getElementById("edit_asset_status").value = asset.asset_status ?? "Active";
+
+        editAssetMessage.textContent = "";
+        editAssetFormContainer.hidden = false;
+        editAssetFormContainer.scrollIntoView({
+            behavior: "smooth",
+            block: "start"
+        });
+    }
+);
+
+// Cancel editing
+cancelEditAssetButton.addEventListener("click", () => {
+    editAssetFormContainer.hidden = true;
+    editAssetForm.reset();
+    editAssetMessage.textContent = "";
+});
+
+
+editAssetForm.addEventListener("submit", async (event) => {
+    event.preventDefault();
+
+    const assetId = document.getElementById("edit_asset_id").value;
+    const submitButton = editAssetForm.querySelector(
+        'button[type="submit"]'
+    );
+
+    submitButton.disabled = true;
+    editAssetMessage.textContent = "Saving changes...";
+
+    try {
+        const formData = new FormData(editAssetForm);
+        const assetData = Object.fromEntries(formData.entries());
+
+        delete assetData.asset_id;
+
+        const response = await fetch(`/api/assets/${assetId}`, {
+            method: "PUT",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify(assetData)
+        });
+
+        const result = await response.json();
+
+        if (!response.ok) {
+            throw new Error(
+                result.message || "Unable to update asset."
+            );
+        }
+
+        editAssetMessage.textContent = result.message;
+
+        await loadAssets();
+
+        // Close the edit form after a successful update
+        editAssetFormContainer.hidden = true;
+        editAssetForm.reset();
+
+    } catch (error) {
+        console.error("Asset update error:", error.message);
+        editAssetMessage.textContent = error.message;
     } finally {
         submitButton.disabled = false;
     }
