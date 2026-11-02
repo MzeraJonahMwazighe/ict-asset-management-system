@@ -154,6 +154,9 @@ assetForm.addEventListener("submit", async (event) => {
 
         await loadAssets();
 
+        // Hide the registration form after successful registration
+        document.getElementById("asset-form-container").hidden = true;
+
     } catch (error) {
         assetFormMessage.textContent = error.message;
     } finally {

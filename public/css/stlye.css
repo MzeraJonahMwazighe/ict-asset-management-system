@@ -435,3 +435,9 @@ a {
         grid-template-columns: 1fr;
     }
 }
+
+/* Ensure hidden forms stay hidden */
+#asset-form-container[hidden],
+#edit-asset-form-container[hidden] {
+    display: none !important;
+}
