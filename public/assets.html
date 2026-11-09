@@ -69,8 +69,30 @@
                     <label for="username">Assigned Username</label>
                     <input type="text" id="username" name="username">
 
+                    <label for="assignment_type">Assignment Type</label>
+                    <select id="assignment_type" name="assignment_type" required>
+                    <option value="">Select assignment type</option>
+                    <option value="Individual">Individual</option>
+                    <option value="Department">Department</option>
+                    <option value="Unassigned">Unassigned</option>
+                    </select>
+
                     <label for="department">Department</label>
-                    <input type="text" id="department" name="department" required>
+                    <select id="department" name="department" disabled>
+                    <option value="">Select department</option>
+                    <option value="Sales">Sales</option>
+                    <option value="Accounting">Accounting</option>
+                    <option value="Operations">Operations</option>
+                    <option value="Quality Assurance">Quality Assurance</option>
+                    <option value="ICT">ICT</option>
+                    <option value="Engineering">Engineering</option>
+                    <option value="Mechanics">Mechanics</option>
+                    </select>
+
+                    <label for="employee_id">Employee</label>
+                    <select id="employee_id" name="employee_id" disabled>
+                      <option value="">Select employee</option>
+                    </select>
 
                     <label for="serial_number">Serial Number</label>
                     <input type="text" id="serial_number" name="serial_number" required>
@@ -123,8 +145,30 @@
         <label for="edit_username">Assigned Username</label>
         <input type="text" id="edit_username" name="username">
 
-        <label for="edit_department">Department</label>
-        <input type="text" id="edit_department" name="department" required>
+        <label for="edit_assignment_type">Assignment Type</label>
+<select id="edit_assignment_type" name="assignment_type" required>
+    <option value="">Select assignment type</option>
+    <option value="Individual">Individual</option>
+    <option value="Department">Department</option>
+    <option value="Unassigned">Unassigned</option>
+</select>
+
+<label for="edit_department">Department</label>
+<select id="edit_department" name="department" disabled>
+    <option value="">Select department</option>
+    <option value="Sales">Sales</option>
+    <option value="Accounting">Accounting</option>
+    <option value="Operations">Operations</option>
+    <option value="Quality Assurance">Quality Assurance</option>
+    <option value="ICT">ICT</option>
+    <option value="Engineering">Engineering</option>
+    <option value="Mechanics">Mechanics</option>
+</select>
+
+<label for="edit_employee_id">Employee</label>
+<select id="edit_employee_id" name="employee_id" disabled>
+    <option value="">Select employee</option>
+</select>
 
         <label for="edit_serial_number">Serial Number</label>
         <input type="text" id="edit_serial_number" name="serial_number" required>

@@ -60,6 +60,37 @@ app.get("/api/dashboard", async (req, res) => {
     }
 });
 
+// Get all employees and their assigned assets
+app.get("/api/employees", async (req, res) => {
+    try {
+        const [rows] = await pool.query(`
+            SELECT
+                e.employee_id,
+                e.name,
+                e.department,
+                a.asset_id,
+                a.asset_type,
+                a.computer_name,
+                a.device_model,
+                a.serial_number,
+                a.assigned_date
+            FROM employees e
+            LEFT JOIN assets a
+                ON e.employee_id = a.employee_id
+            ORDER BY e.name ASC, a.asset_id ASC
+        `);
+
+        res.json(rows);
+
+    } catch (error) {
+        console.error("Failed to fetch employees:", error.message);
+
+        res.status(500).json({
+            message: "Unable to retrieve employee records."
+        });
+    }
+});
+
  // Get all registered assets
 app.get("/api/assets", async (req, res) => {
     try {
@@ -103,31 +134,121 @@ app.post("/api/assets", async (req, res) => {
             device_description,
             operating_system,
             username,
+            assignment_type,
+            employee_id,
             department,
             serial_number,
             asset_status
         } = req.body;
 
-        // Validate required fields
+        // Validate required asset fields
         if (
             !asset_type ||
             !device_model ||
-            !department ||
             !serial_number ||
-            !asset_status
+            !asset_status ||
+            !assignment_type
         ) {
             return res.status(400).json({
                 message: "Please complete all required fields."
             });
         }
 
-        // Determine how the asset is assigned
-        const assignment_type = username
-            ? "Individual"
-            : department
-                ? "Department"
-                : "Unassigned";
+        const allowedAssetTypes = [
+            "Computer",
+            "Server",
+            "Printer",
+            "Cisco Phone"
+        ];
 
+        const allowedAssetStatuses = [
+            "Active",
+            "Under Maintenance",
+            "Damaged Beyond Repair"
+        ];
+
+        const allowedAssignmentTypes = [
+            "Individual",
+            "Department",
+            "Unassigned"
+        ];
+
+        const allowedDepartments = [
+            "Sales",
+            "Accounting",
+            "Operations",
+            "Quality Assurance",
+            "ICT",
+            "Engineering",
+            "Mechanics"
+        ];
+
+        if (!allowedAssetTypes.includes(asset_type)) {
+            return res.status(400).json({
+                message: "Invalid device type."
+            });
+        }
+
+        if (!allowedAssetStatuses.includes(asset_status)) {
+            return res.status(400).json({
+                message: "Invalid asset status."
+            });
+        }
+
+        if (!allowedAssignmentTypes.includes(assignment_type)) {
+            return res.status(400).json({
+                message: "Invalid assignment type."
+            });
+        }
+
+        let finalDepartment = "Unassigned";
+        let finalEmployeeId = null;
+
+        // Handle individual assignment
+        if (assignment_type === "Individual") {
+            const employeeId = Number(employee_id);
+
+            if (!Number.isInteger(employeeId) || employeeId <= 0) {
+                return res.status(400).json({
+                    message: "Please select an employee."
+                });
+            }
+
+            const [employees] = await pool.query(
+                `SELECT employee_id, department
+                 FROM employees
+                 WHERE employee_id = ?`,
+                [employeeId]
+            );
+
+            if (employees.length === 0) {
+                return res.status(400).json({
+                    message: "Selected employee does not exist."
+                });
+            }
+
+            if (department !== employees[0].department) {
+                return res.status(400).json({
+                    message: "Employee does not belong to the selected department."
+                });
+            }
+
+            finalEmployeeId = employeeId;
+            finalDepartment = employees[0].department;
+        }
+
+        // Handle department assignment
+        if (assignment_type === "Department") {
+            if (!allowedDepartments.includes(department)) {
+                return res.status(400).json({
+                    message: "Please select a valid department."
+                });
+            }
+
+            finalDepartment = department;
+        }
+
+        // Register the asset
         const [result] = await pool.query(
             `INSERT INTO assets (
                 asset_type,
@@ -140,8 +261,11 @@ app.post("/api/assets", async (req, res) => {
                 serial_number,
                 assignment_type,
                 asset_status,
-                employee_id
-            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NULL)`,
+                employee_id,
+                assigned_date
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?,
+                CASE WHEN ? = 'Individual'
+                THEN CURRENT_DATE ELSE NULL END)`,
             [
                 asset_type,
                 computer_name || null,
@@ -149,10 +273,12 @@ app.post("/api/assets", async (req, res) => {
                 device_description || null,
                 operating_system || null,
                 username || null,
-                department,
+                finalDepartment,
                 serial_number,
                 assignment_type,
-                asset_status
+                asset_status,
+                finalEmployeeId,
+                assignment_type
             ]
         );
 
@@ -160,6 +286,7 @@ app.post("/api/assets", async (req, res) => {
             message: "Asset registered successfully.",
             asset_id: result.insertId
         });
+
     } catch (error) {
         console.error("Asset registration failed:", error.message);
 
@@ -169,7 +296,10 @@ app.post("/api/assets", async (req, res) => {
             });
         }
 
-        if (error.code === "ER_DATA_TOO_LONG" || error.code === "WARN_DATA_TRUNCATED") {
+        if (
+            error.code === "ER_DATA_TOO_LONG" ||
+            error.code === "WARN_DATA_TRUNCATED"
+        ) {
             return res.status(400).json({
                 message: "One or more asset fields contain invalid values."
             });
@@ -201,25 +331,27 @@ app.put("/api/assets/:id", async (req, res) => {
             device_description,
             operating_system,
             username,
+            assignment_type,
+            employee_id,
             department,
             serial_number,
             asset_status
         } = req.body;
 
-        // Validate required fields
+        // Validate required asset fields.
         if (
             !asset_type ||
             !device_model ||
-            !department ||
             !serial_number ||
-            !asset_status
+            !asset_status ||
+            !assignment_type
         ) {
             return res.status(400).json({
                 message: "Please complete all required fields."
             });
         }
 
-        // Validate allowed device types
+        // Validate allowed device types.
         const allowedAssetTypes = [
             "Computer",
             "Server",
@@ -233,7 +365,7 @@ app.put("/api/assets/:id", async (req, res) => {
             });
         }
 
-        // Validate allowed asset statuses
+        // Validate allowed asset statuses.
         const allowedAssetStatuses = [
             "Active",
             "Under Maintenance",
@@ -245,11 +377,119 @@ app.put("/api/assets/:id", async (req, res) => {
                 message: "Invalid asset status."
             });
         }
-        // Determine the assignment category
-        const assignment_type = username
-            ? "Individual"
-            : "Department";
 
+        // Validate assignment type.
+        const allowedAssignmentTypes = [
+            "Individual",
+            "Department",
+            "Unassigned"
+        ];
+
+        if (!allowedAssignmentTypes.includes(assignment_type)) {
+            return res.status(400).json({
+                message: "Invalid assignment type."
+            });
+        }
+
+        // Allowed departments.
+        const allowedDepartments = [
+            "Sales",
+            "Accounting",
+            "Operations",
+            "Quality Assurance",
+            "ICT",
+            "Engineering",
+            "Mechanics"
+        ];
+
+        // Check that the asset exists and retrieve its current assignment.
+        const [existingAssets] = await pool.query(
+            `SELECT employee_id, assigned_date
+             FROM assets
+             WHERE asset_id = ?`,
+            [assetId]
+        );
+
+        if (existingAssets.length === 0) {
+            return res.status(404).json({
+                message: "Asset not found."
+            });
+        }
+
+        const existingAsset = existingAssets[0];
+
+        let finalDepartment = "Unassigned";
+        let finalEmployeeId = null;
+        let assignedDate = null;
+
+        // Validate individual assignment.
+        if (assignment_type === "Individual") {
+            const selectedEmployeeId = Number(employee_id);
+
+            if (
+                !employee_id ||
+                !Number.isInteger(selectedEmployeeId) ||
+                selectedEmployeeId <= 0
+            ) {
+                return res.status(400).json({
+                    message: "Please select a valid employee."
+                });
+            }
+
+            if (!allowedDepartments.includes(department)) {
+                return res.status(400).json({
+                    message: "Please select a valid department."
+                });
+            }
+
+            const [employees] = await pool.query(
+                `SELECT employee_id, department
+                 FROM employees
+                 WHERE employee_id = ?`,
+                [selectedEmployeeId]
+            );
+
+            if (employees.length === 0) {
+                return res.status(400).json({
+                    message: "Selected employee does not exist."
+                });
+            }
+
+            if (employees[0].department !== department) {
+                return res.status(400).json({
+                    message: "Employee does not belong to the selected department."
+                });
+            }
+
+            finalEmployeeId = selectedEmployeeId;
+            finalDepartment = employees[0].department;
+
+            // Preserve the date if the same employee remains assigned.
+            if (
+                Number(existingAsset.employee_id) === finalEmployeeId &&
+                existingAsset.assigned_date
+            ) {
+                assignedDate = existingAsset.assigned_date;
+            }
+        }
+
+        // Validate department assignment.
+        else if (assignment_type === "Department") {
+            if (!allowedDepartments.includes(department)) {
+                return res.status(400).json({
+                    message: "Please select a valid department."
+                });
+            }
+
+            finalDepartment = department;
+        }
+
+        // Unassigned assets have no employee or department assignment.
+        else {
+            finalDepartment = "Unassigned";
+        }
+
+        // Update the asset.
         const [result] = await pool.query(
             `UPDATE assets
              SET
@@ -261,6 +501,11 @@ app.put("/api/assets/:id", async (req, res) => {
                 username = ?,
                 department = ?,
                 serial_number = ?,
+                employee_id = ?,
+                assigned_date = CASE
+                WHEN ? = 'Individual' THEN COALESCE(?, CURRENT_DATE)
+                ELSE NULL
+                END,
                 assignment_type = ?,
                 asset_status = ?,
                 updated_at = CURRENT_TIMESTAMP
@@ -272,23 +517,21 @@ app.put("/api/assets/:id", async (req, res) => {
                 device_description || null,
                 operating_system || null,
                 username || null,
-                department,
+                finalDepartment,
                 serial_number,
+                finalEmployeeId,
+                assignment_type,
+                assignedDate,
                 assignment_type,
                 asset_status,
                 assetId
             ]
         );
 
-        if (result.affectedRows === 0) {
-            return res.status(404).json({
-                message: "Asset not found."
-            });
-        }
-
         res.json({
             message: "Asset updated successfully."
         });
+
     } catch (error) {
         console.error("Asset update failed:", error.message);
 

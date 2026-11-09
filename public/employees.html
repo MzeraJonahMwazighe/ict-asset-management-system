@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Employees | ICT Asset Management</title>
+    <link rel="stylesheet" href="/css/stlye.css">
+</head>
+<body>
+    <div class="app-layout">
+
+        <aside class="sidebar">
+            <div class="brand">
+                <h2>ICT Asset Management</h2>
+                <p>NKCC · ICT Department</p>
+            </div>
+
+            <nav class="navigation">
+                <a href="/" class="nav-link">Dashboard</a>
+                <a href="/assets.html" class="nav-link">Asset Register</a>
+                <a href="/employees.html" class="nav-link active">Employees</a>
+                <a href="/maintenance.html" class="nav-link">Maintenance</a>
+            </nav>
+
+            <div class="sidebar-footer">
+                <p>ICT Department</p>
+                <small>Asset Management System</small>
+            </div>
+        </aside>
+
+        <main class="main-content">
+
+            <header class="topbar">
+                <div>
+                    <h1>Employees</h1>
+                    <p>View employee records and their assigned ICT equipment.</p>
+                </div>
+            </header>
+
+            <section class="content-card">
+                <div class="section-heading">
+                    <div>
+                        <h2>Employee Records</h2>
+                        <p>Employee information is maintained by HR. ICT can view assignments here.</p>
+                    </div>
+                </div>
+
+                <div class="asset-filters">
+                    <input
+                        type="search"
+                        id="employee-search"
+                        placeholder="Search by employee name or department..."
+                    >
+
+                    <select id="employee-department-filter">
+                        <option value="">All Departments</option>
+                        <option value="Sales">Sales</option>
+                        <option value="Accounting">Accounting</option>
+                        <option value="Operations">Operations</option>
+                        <option value="Quality Assurance">Quality Assurance</option>
+                        <option value="ICT">ICT</option>
+                        <option value="Engineering">Engineering</option>
+                        <option value="Mechanics">Mechanics</option>
+                    </select>
+                </div>
+
+                <div style="overflow-x: auto;">
+                    <table style="width: 100%; border-collapse: collapse;">
+                        <thead>
+                            <tr>
+                                <th align="left">Employee Name</th>
+                                <th align="left">Department</th>
+                                <th align="left">Assigned Device</th>
+                                <th align="left">Device Model</th>
+                                <th align="left">Serial Number</th>
+                                <th align="left">Duration Assigned</th>
+                            </tr>
+                        </thead>
+
+                        <tbody id="employee-table-body">
+                            <tr>
+                                <td colspan="6">Loading employees...</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <p id="employee-message" role="status"></p>
+            </section>
+
+        </main>
+    </div>
+
+    <script src="/js/employees.js"></script>
+</body>
+</html>
