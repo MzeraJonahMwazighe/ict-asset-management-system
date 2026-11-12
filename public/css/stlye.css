@@ -441,3 +441,96 @@ a {
 #edit-asset-form-container[hidden] {
     display: none !important;
 }
+
+/* ===== Maintenance Form ===== */
+
+#maintenance-form {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 16px 20px;
+}
+
+.maintenance-form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    min-width: 0;
+}
+
+.maintenance-form-group label {
+    font-size: 14px;
+    font-weight: 600;
+}
+
+.maintenance-form-group input,
+.maintenance-form-group select,
+.maintenance-form-group textarea {
+    width: 100%;
+    min-width: 0;
+    box-sizing: border-box;
+    padding: 11px 12px;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    background: #ffffff;
+    color: var(--text);
+    font: inherit;
+    font-size: 14px;
+}
+
+.maintenance-form-group textarea {
+    min-height: 90px;
+    resize: vertical;
+}
+
+.maintenance-form-group input:focus,
+.maintenance-form-group select:focus,
+.maintenance-form-group textarea:focus {
+    outline: 2px solid var(--primary);
+    outline-offset: 1px;
+}
+
+#maintenance-form button {
+    justify-self: start;
+    cursor: pointer;
+}
+
+#maintenance-message {
+    font-size: 14px;
+    margin-top: 12px;
+}
+
+/* Responsive Maintenance Form */
+@media (max-width: 700px) {
+    #maintenance-form {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* ===== Maintenance Completion Form ===== */
+
+.maintenance-form-group textarea,
+.maintenance-form-group select {
+    font-family: inherit;
+}
+
+.maintenance-form-group button {
+    padding: 10px 16px;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+}
+
+.maintenance-form-group button:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+.maintenance-form-group button[type="submit"] {
+    background: var(--primary);
+    color: white;
+}
+
+.maintenance-form-group button[type="button"] {
+    background: #e5e7eb;
+    color: #333333;
+}

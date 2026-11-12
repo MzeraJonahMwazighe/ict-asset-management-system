@@ -557,6 +557,325 @@ app.put("/api/assets/:id", async (req, res) => {
 });
 
 // Start server
+
+/**
+ * Fetch maintenance records
+ */
+app.get("/api/maintenance", async (req, res) => {
+    try {
+        const [rows] = await pool.query(`
+            SELECT
+                m.maintenance_id,
+                m.asset_id,
+                m.problem_description,
+                m.action_taken,
+                m.maintenance_date,
+                m.outcome,
+                m.created_at,
+                a.asset_type,
+                a.computer_name,
+                a.device_model,
+                a.serial_number,
+                a.department
+            FROM maintenance m
+            INNER JOIN assets a ON m.asset_id = a.asset_id
+            ORDER BY m.maintenance_date DESC, m.maintenance_id DESC
+        `);
+
+        res.json(rows);
+    } catch (error) {
+        console.error("Failed to fetch maintenance records:", error.message);
+
+        res.status(500).json({
+            message: "Unable to retrieve maintenance records."
+        });
+    }
+});
+
+/**
+ * Fetch assets for the maintenance dropdown
+ */
+app.get("/api/maintenance/assets", async (req, res) => {
+    try {
+        const [rows] = await pool.query(`
+            SELECT
+                asset_id,
+                asset_type,
+                computer_name,
+                device_model,
+                serial_number,
+                department,
+                asset_status
+            FROM assets
+            ORDER BY asset_id DESC
+        `);
+
+        res.json(rows);
+    } catch (error) {
+        console.error("Failed to fetch maintenance assets:", error.message);
+
+        res.status(500).json({
+            message: "Unable to retrieve assets."
+        });
+    }
+});
+
+/**
+ * Record new maintenance - always starts as Pending
+ */
+app.post("/api/maintenance", async (req, res) => {
+    let connection;
+
+    try {
+        const {
+            asset_id,
+            problem_description,
+            action_taken,
+            maintenance_date
+        } = req.body;
+
+        const assetId = Number(asset_id);
+
+        if (!Number.isInteger(assetId) || assetId <= 0) {
+            return res.status(400).json({
+                message: "Please select a valid asset."
+            });
+        }
+
+        if (
+            typeof problem_description !== "string" ||
+            !problem_description.trim()
+        ) {
+            return res.status(400).json({
+                message: "Please enter the problem description."
+            });
+        }
+
+        if (
+            typeof maintenance_date !== "string" ||
+            !/^\d{4}-\d{2}-\d{2}$/.test(maintenance_date) ||
+            !Number.isFinite(Date.parse(maintenance_date))
+        ) {
+            return res.status(400).json({
+                message: "Please enter a valid maintenance date."
+            });
+        }
+
+        const description = problem_description.trim();
+
+        const action = typeof action_taken === "string"
+            ? action_taken.trim()
+            : "";
+
+        connection = await pool.getConnection();
+        await connection.beginTransaction();
+
+        const [assets] = await connection.query(
+            `SELECT asset_id, asset_status
+             FROM assets
+             WHERE asset_id = ?
+             FOR UPDATE`,
+            [assetId]
+        );
+
+        if (assets.length === 0) {
+            await connection.rollback();
+
+            return res.status(404).json({
+                message: "Selected asset does not exist."
+            });
+        }
+
+        if (assets[0].asset_status === "Under Maintenance") {
+            await connection.rollback();
+
+            return res.status(409).json({
+                message: "This asset is already under maintenance."
+            });
+        }
+
+        if (assets[0].asset_status === "Damaged Beyond Repair") {
+            await connection.rollback();
+
+            return res.status(409).json({
+                message: "This asset is marked as damaged beyond repair."
+            });
+        }
+
+        await connection.query(
+            `INSERT INTO maintenance (
+                asset_id,
+                problem_description,
+                action_taken,
+                maintenance_date,
+                outcome,
+                recorded_by
+            ) VALUES (?, ?, ?, ?, 'Pending', NULL)`,
+            [
+                assetId,
+                description,
+                action || null,
+                maintenance_date
+            ]
+        );
+
+        await connection.query(
+            `UPDATE assets
+             SET asset_status = 'Under Maintenance'
+             WHERE asset_id = ?`,
+            [assetId]
+        );
+
+        await connection.commit();
+
+        res.status(201).json({
+            message: "Maintenance record saved successfully.",
+            asset_status: "Under Maintenance"
+        });
+
+    } catch (error) {
+        if (connection) {
+            await connection.rollback();
+        }
+
+        console.error("Failed to record maintenance:", error.message);
+
+        res.status(500).json({
+            message: "Unable to save maintenance record."
+        });
+    } finally {
+        if (connection) {
+            connection.release();
+        }
+    }
+});
+
+
+/**
+ * Complete an existing pending maintenance record
+ */
+app.put("/api/maintenance/:id", async (req, res) => {
+    let connection;
+
+    try {
+        const maintenanceId = Number(req.params.id);
+        const { action_taken, outcome } = req.body;
+
+        if (!Number.isInteger(maintenanceId) || maintenanceId <= 0) {
+            return res.status(400).json({
+                message: "Invalid maintenance record."
+            });
+        }
+
+        if (
+            typeof action_taken !== "string" ||
+            !action_taken.trim()
+        ) {
+            return res.status(400).json({
+                message: "Please describe the final action taken."
+            });
+        }
+
+        if (!["Fixed", "Damaged Beyond Repair"].includes(outcome)) {
+            return res.status(400).json({
+                message: "Please select a valid completion outcome."
+            });
+        }
+
+        const newAssetStatus = outcome === "Fixed"
+            ? "Active"
+            : "Damaged Beyond Repair";
+
+        connection = await pool.getConnection();
+        await connection.beginTransaction();
+
+        const [records] = await connection.query(
+            `SELECT maintenance_id, asset_id, outcome
+             FROM maintenance
+             WHERE maintenance_id = ?
+             FOR UPDATE`,
+            [maintenanceId]
+        );
+
+        if (records.length === 0) {
+            await connection.rollback();
+
+            return res.status(404).json({
+                message: "Maintenance record not found."
+            });
+        }
+
+        if (records[0].outcome !== "Pending") {
+            await connection.rollback();
+
+            return res.status(409).json({
+                message: "Only pending maintenance records can be completed."
+            });
+        }
+
+        const assetId = records[0].asset_id;
+
+        const [assets] = await connection.query(
+            `SELECT asset_id, asset_status
+             FROM assets
+             WHERE asset_id = ?
+             FOR UPDATE`,
+            [assetId]
+        );
+
+        if (
+            assets.length === 0 ||
+            assets[0].asset_status !== "Under Maintenance"
+        ) {
+            await connection.rollback();
+
+            return res.status(409).json({
+                message: "The asset is not currently under maintenance."
+            });
+        }
+
+        await connection.query(
+            `UPDATE maintenance
+             SET action_taken = ?, outcome = ?
+             WHERE maintenance_id = ?`,
+            [
+                action_taken.trim(),
+                outcome,
+                maintenanceId
+            ]
+        );
+
+        await connection.query(
+            `UPDATE assets
+             SET asset_status = ?
+             WHERE asset_id = ?`,
+            [newAssetStatus, assetId]
+        );
+
+        await connection.commit();
+
+        res.json({
+            message: "Maintenance completed successfully.",
+            asset_status: newAssetStatus
+        });
+
+    } catch (error) {
+        if (connection) {
+            await connection.rollback();
+        }
+
+        console.error("Failed to complete maintenance:", error.message);
+
+        res.status(500).json({
+            message: "Unable to complete maintenance."
+        });
+    } finally {
+        if (connection) {
+            connection.release();
+        }
+    }
+});
+
 app.listen(PORT, () => {
     console.log(`Server is running at http://localhost:${PORT}`);
 });

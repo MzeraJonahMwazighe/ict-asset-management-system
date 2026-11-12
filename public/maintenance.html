@@ -1,0 +1,136 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Maintenance | ICT Asset Management</title>
+    <link rel="stylesheet" href="/css/stlye.css">
+</head>
+<body>
+    <div class="app-layout">
+
+        <aside class="sidebar">
+            <div class="brand">
+                <h2>ICT Asset Management</h2>
+                <p>NKCC · ICT Department</p>
+            </div>
+
+            <nav class="navigation">
+                <a href="/" class="nav-link">Dashboard</a>
+                <a href="/assets.html" class="nav-link">Asset Register</a>
+                <a href="/employees.html" class="nav-link">Employees</a>
+                <a href="/maintenance.html" class="nav-link active">Maintenance</a>
+            </nav>
+
+            <div class="sidebar-footer">
+                <p>ICT Department</p>
+                <small>Asset Management System</small>
+            </div>
+        </aside>
+
+        <main class="main-content">
+
+            <header class="topbar">
+                <div>
+                    <h1>Maintenance</h1>
+                    <p>Record and track maintenance activities for ICT equipment.</p>
+                </div>
+            </header>
+
+            <section class="content-card">
+
+                <div class="section-heading">
+                    <div>
+                        <h2>Record Maintenance</h2>
+                        <p>Record a maintenance issue and its outcome.</p>
+                    </div>
+                </div>
+
+                
+<form id="maintenance-form">
+
+    <div class="maintenance-form-group">
+        <label for="maintenance-asset">Select Asset</label>
+        <select id="maintenance-asset" name="asset_id" required>
+            <option value="">Loading assets...</option>
+        </select>
+    </div>
+
+    <div class="maintenance-form-group">
+        <label for="problem-description">Problem Description</label>
+        <textarea
+            id="problem-description"
+            name="problem_description"
+            placeholder="Describe the problem..."
+            required
+        ></textarea>
+    </div>
+
+    <div class="maintenance-form-group">
+        <label for="action-taken">Action Taken</label>
+        <textarea
+            id="action-taken"
+            name="action_taken"
+            placeholder="Describe the action taken..."
+        ></textarea>
+    </div>
+
+    <div class="maintenance-form-group">
+        <label for="maintenance-date">Maintenance Date</label>
+        <input
+            type="date"
+            id="maintenance-date"
+            name="maintenance_date"
+            required
+        >
+    </div>
+    <button type="submit">Save Maintenance Record</button>
+
+</form>
+
+
+                <p id="maintenance-message" role="status"></p>
+
+            </section>
+
+            <section class="content-card">
+
+                <div class="section-heading">
+                    <div>
+                        <h2>Maintenance History</h2>
+                        <p>View previously recorded maintenance activities.</p>
+                    </div>
+                </div>
+
+                <div style="overflow-x: auto;">
+                    <table style="width: 100%; border-collapse: collapse;">
+                        <thead>
+                            <tr>
+                                <th align="left">Asset</th>
+                                <th align="left">Model</th>
+                                <th align="left">Serial Number</th>
+                                <th align="left">Problem</th>
+                                <th align="left">Action Taken</th>
+                                <th align="left">Date</th>
+                                <th align="left">Outcome</th>
+                                <th align="left">Action</th>
+                            </tr>
+                        </thead>
+
+                        <tbody id="maintenance-table-body">
+                            <tr>
+                                <td colspan="8">Loading maintenance records...</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+            </section>
+
+        </main>
+    </div>
+
+    <script src="/js/maintenance.js"></script>
+</body>
+</html>
